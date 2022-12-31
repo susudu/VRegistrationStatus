@@ -6,7 +6,7 @@ const Status = function(status) {
 };
 
 Status.findBySSN = (ssn, result) => {
-  sql.query(`SELECT * FROM user WHERE ssn = ${ssn}`, (err, res) => {
+  sql.query(`SELECT ssn as SSN, CONCAT(fname," ",lname) as Voter_Name , vstatus as Voter_Status FROM user WHERE ssn = '${ssn}'`, (err, res) => {
     if (err) {
       console.log("error: ", err);
       result(err, null);
@@ -23,19 +23,19 @@ Status.findBySSN = (ssn, result) => {
 };
 
 Status.findByVstatus = (vstatus, result) => {
-  sql.query(`SELECT * FROM user WHERE vstatus = ${vstatus}`, (err, res) => {
+  let query = "SELECT vstatus as Voter_Status ,COUNT(iduser) AS Vcount FROM user";
+  if (vstatus) {
+    query += ` WHERE vstatus = '${vstatus}'`;
+  }
+  query += ` GROUP BY vstatus`;
+  sql.query(query, (err, res) => {
     if (err) {
       console.log("error: ", err);
-      result(err, null);
+      result(null, err);
       return;
     }
-    if (res.length) {
-      console.log("found status: ", res[0]);
-      result(null, res[0]);
-      return;
-    }
-    // not found status 
-    result({ kind: "not_found" }, null);
+    console.log("statistics: ", res);
+    result(null, res);
   });
 };
 module.exports = Status;
